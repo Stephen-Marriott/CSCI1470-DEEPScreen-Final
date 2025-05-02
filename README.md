@@ -1,99 +1,47 @@
-# CSCI-DEEPScreen: Virtual Screening with Deep Convolutional Neural Networks Using Compound Images
+# Modeling Drug-Target Interactions: Deep Learning Architectures to Classify Drug Activity for Target Proteins
 
-* **Important notice**: This is a re-implemented version of the original DEEPScreen using keras instead of pytorch for the final project of CSCI1470 Deep Learning.
+## Team: Stephen Marriott, Wanming He, William Welsh
 
-* DEEPScreen is a large-scale DTI prediction system, for early stage drug discovery, using deep convolutional neural networks
-* One of the main advantages of DEEPScreen is employing readily available 2-D structural representations of compounds at the input level instead of conventional descriptors that display limited performance
-* DEEPScreen learns complex features inherently from the 2-D representations, thus producing highly accurate predictions.
-* More information can be obtained from [DEEPScreen journal article](https://doi.org/10.1039/C9SC03414E).
+## Introduction
+Our group is reimplementing on the models outlined in the following paper: [DEEPScreen journal article](https://doi.org/10.1039/C9SC03414E). The goal behind this model is to predict active compounds in target proteins using a convolutional neural network. This is an area of promise in deep learning moving forward, and touches on the intersection of chemistry and health, which all team members involved found interesting. This is structured in the form of a binary classification problem, where the model will determine whether the compound is active or inactive for that specific target. Additionally, we propose two alternative architectures: an Alternative CNN and an Attention-based CNN, aiming to improve prediction accuracy.
 
 ![poster](https://github.com/Stephen-Marriott/CSCI1470-DEEPScreen-Final/blob/main/DEEPScreen_Poster.png)
 
-## Installation
+## Methodology
 
-DEEPScreen is a command-line prediction tool written in Python 3.7.1. DEEPScreen was developed and tested in MacOSx but it should run in any Unix-like operating system. Please run the below commands to install requirements for model training and testing. Dependencies are available in requirements.txt file which is located under bin directory.
+The DEEPScreen GitHub repository provided a link to a DropBox containing folders for each target protein, as well as images and labels for the active and inactive component compounds. The team has downloaded the data, although not all of it is uploaded to GitHub due to the size and volume. DEEPScreen provides an architecture for a model to learn the protein composition, but each protein has a separate model trained. Our group has re-implemented the DEEPScreen structure in TensorFlow, rather than the original PyTorch, and created two other architectures in the hopes of improving model performance. The first is an alternative CNN, with a smaller number of deeper convolutional layers than the original. The second aims to incorporate spatial attention into the classification model. At this stage, our models are essentially complete, aside from some minor potential changes to features like the learning rate for the optimizer.
 
-```
-conda create -n deepscreen_env python=3.7
-source activate deepscreen_env
-pip install -r requirements.txt
-```
-## Descriptions of folders and files in the DEEPScreen repository
+## Results
+Our experiments across 15 protein targets show that the Alternative CNN slightly outperforms the original DEEPScreen model in accuracy, while the Spatial Attention CNN exhibits higher variability and generally lower performance. 
+| Target Protein | Model Type      | Test Loss       | Test Accuracy | Test Precision | Test Recall  |
+|----------------|----------------|-----------------|---------------|----------------|--------------|
+| CHEMBL1862     | DEEPScreen     | 0.437165        | 0.804404      | 0.862013       | 0.687824     |
+| CHEMBL1862     | Alternative_CNN| 0.364040        | 0.848446      | 0.924494       | 0.650259     |
+| CHEMBL1862     | Attention_CNN  | 0.494805        | 0.768135      | 0.599518       | 0.967617     |
+| CHEMBL2581     | DEEPScreen     | 0.575983        | 0.688202      | 0.780645       | 0.339888     |
+| CHEMBL2581     | Alternative_CNN| 0.579875        | 0.707865      | 0.901639       | 0.154494     |
+| CHEMBL2581     | Attention_CNN  | 0.557039        | 0.710674      | 0.903846       | 0.132022     |
+| CHEMBL253      | DEEPScreen     | 0.375896        | 0.863579      | 0.881921       | 0.827284     |
+| CHEMBL253      | Alternative_CNN| 0.324372        | 0.871089      | 0.925676       | 0.685857     |
+| CHEMBL253      | Attention_CNN  | 0.524984        | 0.768461      | 0.848087       | 0.485607     |
 
+## Challenges
+Our group has hit a few stumbling blocks along the way. First, a lot of the data processing in the original paper made use of PyTorch, in addition to the original model. This forced us to create new functions to load and split the images based on the provided labels. Finding a plausible way to implement spatial attention was a challenge, and this version borrows from what was originally a model for 3-Dimensional spatial attention. As we’ve built three separate model architectures, that has required a lot of time and effort to tune parameters and change the number and shape of layers. In particular, the two models we designed as alternatives to DeepScreen appeared to rapidly overfit the training data, which necessitated some changes in setup, as well as a lowering of the learning rate for the optimizer. While this has made the alternative CNN we proposed a little better than DEEPScreen in the models we’ve tested so far, we have yet to find a consistently accurate implementation of a model incorporating spatial attention. The attention model also takes a little bit longer to train, and adding more layers or rearranging existing ones has primarily served to slow the training process without adding any accuracy benefits.
 
-* **bin** folder includes the source code of DEEPScreen.
-
-* **training_files** folder includes the files directly used in the training and testing of the system:
-    * **chembl27_preprocessed_filtered_bioactivity_dataset.tsv.zip** updated version of ChEMBL preprocessed and filtered dataset contains drug/compound-target interactions from the ChEMBL database (v27) after the application of multiple filtering operations to obtain a clean training set,
-    * **chembl27_training_target_list.txt** list of target chembl ids,
-    * **target_training_datasets** contains a folder (e.g. CHEMBL286) for each target where each target folder contains 
-    	* a json file named  **train_val_test_dict.json** which includes train/validation/test compound ids,
-    	* a folder named **imgs** which holds images of compounds.
-       
-    * **chembl27_preprocessed_filtered_act_inact_comps_10.0_20.0_blast_comp_0.2.txt** contains the active and inactive compound information for each target protein in ChEMBL, after the similarity-based negative training dataset enrichment process. In this file, there are two lines for each target, in the following format:
-        
-        ```
-       CHEMBL286_act	CHEMBL1818056,CHEMBL2115367,CHEMBL344651,CHEMBL62054, ...
-       CHEMBL286_inact	CHEMBL288434,CHEMBL584926,CHEMBL406111,CHEMBL151055, ...
-       ```
-       
-       The list of active/inactive compounds separated by commas (i.e., the second tab seperated column: *CHEMBL1818056,C...*) for the correnponding target (i.e., the first column: *CHEMBL286_act*),
-
-       
-    * **chembl27_uniprot_mapping.txt** contains the id mapping between UniProt accessions and ChEMBL ids for proteins, in tab-separated format (Target UniProt accession, Target	ChEMBL id, Target protein name and Target type),
-    
-* **result_files** folder contains results of various tests/analyses:
-
-* **2-D images of:** 
-   - 409,311 ChEMBL compounds in the train/validation/test datasets of 812 target proteins of DEEPScreen can be downloaded from [here](https://drive.google.com/file/d/1E7ZpLN_fMdXmPJPP7WH3IPWPceleP_3a/view?usp=sharing)
-   - all compounds (~2M) in ChEMBL v27 can be downloaded from [here](https://drive.google.com/file/d/16T8NI1Umf8A0qeLu90Akbx3ic-vdAbUO/view?usp=sharing)
-   - all drugs (~11K) in DrugBank v5.1.7 can be downloaded from [here](https://drive.google.com/file/d/11vSqg1SgX7y25TbX4EzNOjWNkSFVZzek/view?usp=sharing)
-
-## How to train DEEPScreen models and get performance results 
-
-* Clone the Git Repository
-
-* Download the compressed file for the target  that you want to train  [here](https://www.dropbox.com/sh/as18uxmctnf39kc/AADUqZX3XAiQRU6UVp3SsBRXa?dl=0)
-
-* Locate the zipped target file under **training_files/target_training_datasets** and unzip it
-
-* Run the **main_training.py** script as shown below
-
-## How to evaluate a model and get performance results
-
-* Run the **python bin/eval_model.py --model_path "trained_models/<experiment_name>" --target_id <experiment_id>** command
-
-## Explanation of Parameters
-
-* **--targetid**: Target to be trained (default: CHEMBL286)
-
-* **--model**: CNN architecture to be used (default: CNNModel1)
-
-* **--fc1**: number of neurons in the first fully-connected layer (default:512)
-
-* **--fc2**: number of neurons in the second fully-connected layer (default:256)
-
-* **--lr**:learning rate (default: 0.001)
-
-* **--bs**: batch size (default: 32)
-
-* **--dropout**: dropout rate (default: 0.1)
-
-* **--epoch**: number of epochs (default: 200)
-
-* **--en**: the name of the experiment (default: my_experiment)
-
-  
-#### To perform training for a target (CHEMBL286 in the below example):
-
-```
-python main_training.py --targetid CHEMBL286 --model CNNModel1 --fc1 256 --fc2 128 --lr 0.01 --bs 64 --dropout 0.25 --epoch 100 --en my_chembl286_training
-```
-
-#### Output of the scripts
-**main_training.py** creates a folder named **<experiment_name>** (given as argument **--en**)   under **result_files/experiments** folder. Two files are created under **results_files/experiments/<experiment_name>**:
-* **best_val_test_predictions-<hyperparameters_seperated by dash>-<experiment_name>.txt** contains predictions for independent test dataset. 
-* **best_val_test_performance_results-<hyperparameters_seperated by dash>-<experiment_name>.txt** which contains the best test performance results. Sample output files for ChEMBL286 target is given under  **results_files/experiments/my_chembl286_training**.
+## Reflection
+* How do you feel your project ultimately turned out? How did you do relative to your base/target/stretch goals?
+    Overall, the project was successful in reimplementing DEEPScreen in TensorFlow and proposing two alternative architectures. The Alternative CNN consistently outperformed the original DEEPScreen implementation in accuracy and precision, meeting our base goal of replication and our target goal of improvement. However, the Attention CNN underperformed, struggling with overfitting and inconsistent recall-precision trade-offs, falling short of our goal of a robust attention-based model.
+* Did your model work out the way you expected it to?
+    * Expected: We hypothesized that both the Alternative CNN and Attention CNN would outperform DEEPScreen. The Alternative CNN met this expectation, but the Attention CNN’s instability was surprising.
+    * Unexpected Findings: The Attention CNN’s high recall but low precision suggested it is overfitting. We also found that DEEPScreen’s recall was surprisingly strong for some targets (82.7% for CHEMBL253), making it a tough baseline to beat.
+* How did your approach change over time? What kind of pivots did you make, if any? Would you have done differently if you could do your project over again?
+    * Initial Plan: Direct PyTorch-to-TensorFlow port of DEEPScreen + two new architectures.
+    * Pivots: we rewrote PyTorch-dependent pipelines for TensorFlow. We also adapted a 3D spatial attention design, which may have been suboptimal for 2D structures. For our alternative CNN model, it initially overfit badly. We resolved by reducing layers and tuning learning rates.
+    * Lessons: If we tested earlier on diverse proteins, we might have found architecture weaknesses sooner. Spending more time on learning rates and dropout might have helped the Attention CNN.
+* What do you think you can further improve on if you had more time?
+    We can definitly experiment with different attention variants to improve spatial focus without overfitting. We also could conduct grid searches for optimal learning rates, batch sizes, and regularization. We also would want to augment training data more to reduce overfitting.
+* What are your biggest takeaways from this project/what did you learn?
+    We learned from the Alternative CNN’s success that well-tuned, deeper convolutions can outperform complex models like attention when data is limited. We also learned that reproducibility is hard as porting PyTorch to TensorFlow introduced lots of bugs. And it is important to document all preprocessing steps and validate intermediate outputs.
 
 ## Article
 
