@@ -1,6 +1,7 @@
 # CSCI-DEEPScreen: Virtual Screening with Deep Convolutional Neural Networks Using Compound Images
 
 * **Important notice**: This is a re-implemented version of the original DEEPScreen using keras instead of pytorch for the final project of CSCI1470 Deep Learning.
+* Further details in this project can be found in the writeup included in this repository.
 
 * DEEPScreen is a large-scale DTI prediction system, for early stage drug discovery, using deep convolutional neural networks
 * One of the main advantages of DEEPScreen is employing readily available 2-D structural representations of compounds at the input level instead of conventional descriptors that display limited performance
