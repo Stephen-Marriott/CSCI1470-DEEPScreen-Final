@@ -7,7 +7,7 @@
 * DEEPScreen learns complex features inherently from the 2-D representations, thus producing highly accurate predictions.
 * More information can be obtained from [DEEPScreen journal article](https://doi.org/10.1039/C9SC03414E).
 
-![poster](https://github.com/Stephen-Marriott/CSCI1470-DEEPScreen-Final/blob/main/DEEPScreen_Poster.pdf)
+![poster](https://github.com/Stephen-Marriott/CSCI1470-DEEPScreen-Final/blob/main/DEEPScreen_Poster.png)
 
 ## Installation
 
